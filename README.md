@@ -6,12 +6,12 @@
 [![CodeQL](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
-This action helps you to login to Steam with the **Steam Console Client** for 
+This action helps you to login to Steam with the **Steam Console Client** for
 use in actions.
 
 ## Usage
 
-The following example will install and validate the app with ID 1337, which 
+The following example will install and validate the app with ID 1337, which
 can be any Steam application licensed to the logged-in Steam account.
 
 ```yaml
