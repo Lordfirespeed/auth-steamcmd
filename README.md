@@ -17,12 +17,14 @@ can be any Steam application licensed to the logged-in Steam account.
 ```yaml
 steps:
   - name: Setup SteamCMD
+    id: setup_steamcmd
     uses: Lordfirespeed/setup-steamcmd@v2
 
   - name: Populate SteamCMD profile config
     uses: Lordfirespeed/auth-steamcmd@v1
     with:
       steam_config_vdf: ${{ secrets.steam_config_vdf }}
+      steam_home: "path/to/steam/home"
 
   - name: Update licensed app
     run: steamcmd +login ${{ secrets.steam_username }} \
