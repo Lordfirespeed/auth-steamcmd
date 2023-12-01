@@ -10,7 +10,7 @@ This action helps you to login to Steam with the **Steam Console Client** for us
 
 ## Usage
 
-The following example will install and validate the app with id 1337, which can be any Steam application licensed
+The following example will install and validate the app with ID 1337, which can be any Steam application licensed
 to the logged-in Steam account.
 
 ```yaml
