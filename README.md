@@ -34,6 +34,11 @@ steps:
 | name | description |
 |:----:|:-----------:|
 
+## Acknowledgements
+
+- [game-ci/steam-deploy](https://github.com/game-ci/steam-deploy/blob/main/steam_deploy.sh) 
+  for specifics on using the `config.vhf` file to authenticate with SteamCMD
+
 ## Todo
 
 [] Update the Action Metadata
