@@ -25,7 +25,8 @@ steps:
       steam_config_vdf: ${{ secrets.steam_config_vdf }}
 
   - name: Update licensed app
-    run: steamcmd +login ${{ secrets.steam_username }} +app_update 1337 validate +quit
+    run: steamcmd +login ${{ secrets.steam_username }} \
+      +app_update 1337 validate +quit
 ```
 
 ## Outputs
