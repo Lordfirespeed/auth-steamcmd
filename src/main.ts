@@ -12,7 +12,7 @@ import {
   discernActionInputErrorReason
 } from './lib'
 
-export class AuthenticateSteamCMD {
+export default class AuthenticateSteamCMD {
   /**
    * The main function for the action.
    * @returns {Promise<void>} Resolves when the action is complete.
