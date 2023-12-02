@@ -1,23 +1,26 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Authenticate SteamCMD'
+description: 'Authenticate with SteamCMD by decoding Steam `config.vdf` from a repository secret.'
+author: 'Lordfirespeed'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
   icon: 'heart'
-  color: 'red'
+  color: 'purple'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  steam_config_vdf:
+    description: "Base64 encoded config.vdf file"
     required: true
-    default: '1000'
+  steam_username:
+    description: "Username of Steam account to attempt login with"
+    required: true
+  steam_home:
+    description: "Steam configuration root directory"
+    default: "$HOME/Steam"
 
 # Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
 
 runs:
   using: node20
