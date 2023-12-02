@@ -26,7 +26,10 @@ export class AuthenticateSteamCMD {
       TE.bind('steamConfigFile', state =>
         this.writeSteamConfigFileTaskEither(state)
       ),
-      TE.tap(state => this.testLoginSucceedsTaskEither(state))
+      TE.tap(state => this.testLoginSucceedsTaskEither(state)),
+      TE.getOrElse(error => {
+        throw error
+      })
     )
     await task()
   }
