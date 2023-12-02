@@ -41,7 +41,7 @@ export class AuthenticateSteamCMD {
     )
   }
 
-  async getRequiredInput(key: string): Promise<string> {
+  getRequiredInput(key: string): string {
     try {
       return core.getInput(key, { required: true })
     } catch (error) {
@@ -52,8 +52,7 @@ export class AuthenticateSteamCMD {
 
   @ActionLogGroup('Getting inputs')
   async getInputs() {
-    const configValveDataFormatBase64Encoded =
-      await this.getRequiredInput('steam_config_vdf')
+    const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf')
     if (!isBase64(configValveDataFormatBase64Encoded)) {
       core.error(
         "Provided 'steam_config_vdf' input is not Base64 encoded. Aborting."
@@ -67,10 +66,10 @@ export class AuthenticateSteamCMD {
     )
     core.info('Steam config.vdf decoded.')
 
-    const steamHome = await this.getRequiredInput('steam_home')
+    const steamHome = this.getRequiredInput('steam_home')
     core.info(`Steam home is ${steamHome}`)
 
-    const steamUsername = await this.getRequiredInput('steam_username')
+    const steamUsername = this.getRequiredInput('steam_username')
     core.info('Got steam username.')
 
     core.info('Done.')
