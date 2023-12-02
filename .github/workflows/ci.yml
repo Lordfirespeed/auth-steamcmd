@@ -61,11 +61,3 @@ jobs:
         with:
           steam_config_vdf: ${{ secrets.steam_config_vdf }}
           steam_username: ${{ secrets.steam_username }}
-
-      - name: Attempt login
-        run: steamcmd +login ${{ secrets.steam_username }} +quit
-        shell: bash
-
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
