@@ -50,6 +50,14 @@ export class AuthenticateSteamCMD {
     }
   }
 
+  getInputOrDefault(key: string, fallback: () => string): string {
+    const provided = core.getInput(key)
+    if (provided) return provided;
+
+    core.info(`Falling back to lazy default for ${key}`);
+    return fallback();
+  }
+
   @ActionLogGroup('Getting inputs')
   async getInputs() {
     const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf')
@@ -66,7 +74,7 @@ export class AuthenticateSteamCMD {
     )
     core.info('Steam config.vdf decoded.')
 
-    const steamHome = this.getRequiredInput('steam_home')
+    const steamHome = this.getInputOrDefault('steam_home', () => "$HOME/Steam")
     core.info(`Steam home is ${steamHome}`)
 
     const steamUsername = this.getRequiredInput('steam_username')
