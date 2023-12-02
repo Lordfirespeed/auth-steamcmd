@@ -20,10 +20,10 @@ export class AuthenticateSteamCMD {
   async run(): Promise<void> {
     const task = pipe(
       this.getInputsTaskEither(),
-      TE.bind('steamConfigDirectory', state =>
+      TE.bindW('steamConfigDirectory', state =>
         this.ensureSteamConfigDirTaskEither(state)
       ),
-      TE.bind('steamConfigFile', state =>
+      TE.bindW('steamConfigFile', state =>
         this.writeSteamConfigFileTaskEither(state)
       ),
       TE.tap(state => this.testLoginSucceedsTaskEither(state)),
