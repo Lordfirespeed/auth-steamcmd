@@ -1,21 +1,23 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
-  "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
+  "name": "auth-steamcmd",
+  "description": "GitHub Action that authenticates SteamCMD.",
+  "version": "1.0.0",
+  "author": "Lordfirespeed",
+  "private": false,
+  "homepage": "https://github.com/Lordfirespeed/auth-steamcmd",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/Lordfirespeed/auth-steamcmd"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/Lordfirespeed/auth-steamcmd/issues"
   },
   "keywords": [
     "actions",
     "node",
-    "setup"
+    "authentication",
+    "setup",
+    "steam"
   ],
   "exports": {
     ".": "./dist/index.js"
