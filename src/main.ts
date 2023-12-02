@@ -209,7 +209,13 @@ export class AuthenticateSteamCMD {
     // U+0004: 'End of Transmission' - if prompted for a password, fail immediately
     const loginExitCode = await exec.exec(
       'steamcmd',
-      ['+login', steamUsername, '+quit'],
+      [
+        '+set_steam_guard_code',
+        'INVALID',
+        '+login',
+        `${steamUsername}`,
+        '+quit'
+      ],
       {
         ignoreReturnCode: true,
         input: Buffer.from('\u0004')
