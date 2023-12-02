@@ -44,7 +44,7 @@ jobs:
         run: npm run ci-test
 
   test-action:
-    name: GitHub Actions Test
+    name: Test 'Authenticate SteamCMD'
     runs-on: ubuntu-latest
 
     steps:
@@ -52,11 +52,20 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Test Local Action
+      - name: Setup SteamCMD
+        uses: Lordfirespeed/setup-steamcmd@v2
+
+      - name: Authenticate SteamCMD
         id: test-action
         uses: ./
         with:
-          milliseconds: 1000
+          steam_config_vdf: ${{ secrets.steam_config_vdf }}
+          steam_home: "path/to/steam/home"
+          steam_username: ${{ secrets.steam_username }}
+
+      - name: Attempt login
+        run: steamcmd +login ${{ secrets.steam_username }} +quit
+        shell: bash
 
       - name: Print Output
         id: output
