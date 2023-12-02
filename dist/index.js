@@ -12188,7 +12188,7 @@ class AuthenticateSteamCMD {
      * @returns {Promise<void>} Resolves when the action is complete.
      */
     async run() {
-        const task = (0, function_1.pipe)(this.getInputsTaskEither(), TE.bind('steamConfigDirectory', state => this.ensureSteamConfigDirTaskEither(state)), TE.bind('steamConfigFile', state => this.writeSteamConfigFileTaskEither(state)), TE.tap(state => this.testLoginSucceedsTaskEither(state)), TE.getOrElse(error => {
+        const task = (0, function_1.pipe)(this.getInputsTaskEither(), TE.bindW('steamConfigDirectory', state => this.ensureSteamConfigDirTaskEither(state)), TE.bindW('steamConfigFile', state => this.writeSteamConfigFileTaskEither(state)), TE.tap(state => this.testLoginSucceedsTaskEither(state)), TE.getOrElse(error => {
             throw error;
         }));
         await task();
@@ -12198,7 +12198,7 @@ class AuthenticateSteamCMD {
     }
     getRequiredInput(key) {
         try {
-            return core.getInput(key, { required: true });
+            return core.getInput(key, { required: true, trimWhitespace: true });
         }
         catch (error) {
             core.error((0, lib_1.discernActionInputErrorReason)(error, { inputKey: key }));
@@ -12206,11 +12206,19 @@ class AuthenticateSteamCMD {
         }
     }
     getInputOrDefault(key, fallback) {
-        const provided = core.getInput(key);
+        const provided = core.getInput(key, { trimWhitespace: true });
         if (provided)
             return provided;
         core.info(`Falling back to lazy default for ${key}`);
         return fallback();
+    }
+    async expandEnvVars(value) {
+        return await exec
+            .getExecOutput('bash', ['-c', `echo "${value}"`], {
+            ignoreReturnCode: false
+        })
+            .then(result => result.stdout)
+            .then(stdout => stdout.trim());
     }
     async getInputs() {
         const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf');
@@ -12221,7 +12229,8 @@ class AuthenticateSteamCMD {
         core.info('Decoding steam config.vdf contents...');
         const configValveDataFormat = Buffer.from(configValveDataFormatBase64Encoded, 'base64');
         core.info('Steam config.vdf decoded.');
-        const steamHome = this.getInputOrDefault('steam_home', () => '$HOME/Steam');
+        const steamHomeCompacted = this.getInputOrDefault('steam_home', () => '$HOME/Steam');
+        const steamHome = await this.expandEnvVars(steamHomeCompacted);
         core.info(`Steam home is ${steamHome}`);
         const steamUsername = this.getRequiredInput('steam_username');
         core.info('Got steam username.');
@@ -12248,18 +12257,40 @@ class AuthenticateSteamCMD {
     writeSteamConfigFileTaskEither({ steamConfigDirectory, configValveDataFormat }) {
         return TE.tryCatch(() => this.writeSteamConfigFile(steamConfigDirectory, configValveDataFormat), reason => reason);
     }
+    async writeFile(file, content, options = null) {
+        if (typeof options === 'string') {
+            options = {
+                encoding: options
+            };
+        }
+        let fileHandle;
+        try {
+            core.info(`Opening ${file} for writing...`);
+            // will throw if file already exists
+            fileHandle = await promises_1.default.open(file, 'w', options?.mode);
+            core.info(`Writing contents...`);
+            await fileHandle.writeFile(content, options);
+            if (options?.mode) {
+                core.info(`Setting file permissions...`);
+                await fileHandle.chmod(options.mode);
+            }
+        }
+        finally {
+            if (fileHandle) {
+                core.info(`Closing ${file}...`);
+                await fileHandle.close();
+            }
+        }
+        core.info('Done.');
+        return file;
+    }
     async writeSteamConfigFile(steamConfigDirectory, configValveDataFormat) {
         const steamConfigFile = path_1.default.join(steamConfigDirectory, 'config.vdf');
         try {
-            core.info(`Opening ${steamConfigFile} for writing...`);
-            // will throw if file already exists
-            const steamConfigFileHandle = await promises_1.default.open(steamConfigFile, 'wx');
-            core.info(`Writing decoded contents...`);
-            await steamConfigFileHandle.writeFile(configValveDataFormat, {
-                encoding: 'ascii'
+            await this.writeFile(steamConfigFile, configValveDataFormat, {
+                encoding: 'ascii',
+                mode: 0o777
             });
-            core.info('Done.');
-            return steamConfigFile;
         }
         catch (error) {
             core.error(`Failed to write Steam config. Reason: ${(0, lib_1.discernFileSystemErrorReason)(error, { file: steamConfigFile })}`);
@@ -12272,7 +12303,13 @@ class AuthenticateSteamCMD {
     async testLoginSucceeds(steamUsername) {
         core.info('Attempting SteamCMD login...');
         // U+0004: 'End of Transmission' - if prompted for a password, fail immediately
-        const loginExitCode = await exec.exec('steamcmd', ['+login', steamUsername, '+quit'], {
+        const loginExitCode = await exec.exec('steamcmd', [
+            '+set_steam_guard_code',
+            'INVALID',
+            '+login',
+            `${steamUsername}`,
+            '+quit'
+        ], {
             ignoreReturnCode: true,
             input: Buffer.from('\u0004')
         });
