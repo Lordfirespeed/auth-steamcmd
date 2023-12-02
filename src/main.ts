@@ -121,28 +121,40 @@ export class AuthenticateSteamCMD {
   }) {
     return TE.tryCatch(
       () =>
-        this.writeSteamConfigFile(steamConfigDirectory, configValveDataFormat),
+        this.writeSteamConfigFileRedirectingErrors(steamConfigDirectory, configValveDataFormat),
       reason => reason
     )
   }
 
+  async writeFile(file: string, content: Buffer, options: Parameters<fs.FileHandle["writeFile"]>[1] = null) {
+    let fileHandle: fs.FileHandle | undefined
+    try {
+      core.info(`Opening ${file} for writing...`)
+      // will throw if file already exists
+      fileHandle = await fs.open(file, 'wx')
+
+      core.info(`Writing contents...`)
+      await fileHandle.writeFile(content, options)
+    }
+    finally {
+      if (fileHandle) {
+        core.info(`Closing ${file}...`);
+        await fileHandle.close()
+      }
+    }
+
+    core.info('Done.')
+    return file
+  }
+
   @ActionLogGroup('Writing config file')
-  async writeSteamConfigFile(
+  async writeSteamConfigFileRedirectingErrors(
     steamConfigDirectory: string,
     configValveDataFormat: Buffer
   ) {
     const steamConfigFile = path.join(steamConfigDirectory, 'config.vdf')
     try {
-      core.info(`Opening ${steamConfigFile} for writing...`)
-      // will throw if file already exists
-      const steamConfigFileHandle = await fs.open(steamConfigFile, 'wx')
-
-      core.info(`Writing decoded contents...`)
-      await steamConfigFileHandle.writeFile(configValveDataFormat, {
-        encoding: 'ascii'
-      })
-      core.info('Done.')
-      return steamConfigFile
+      await this.writeFile(steamConfigFile, configValveDataFormat, { encoding: "ascii" })
     } catch (error) {
       core.error(
         `Failed to write Steam config. Reason: ${discernFileSystemErrorReason(
