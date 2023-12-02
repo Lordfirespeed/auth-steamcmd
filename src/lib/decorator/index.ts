@@ -1,1 +1,1 @@
-export { default as ActionLogGroup } from "./action.log.group";
+export { default as ActionLogGroup } from './action.log.group'

@@ -2,10 +2,13 @@ type actionInputErrorContext = {
   inputKey: string
 }
 
-export default function discernActionInputErrorReason(error: unknown, context: actionInputErrorContext): string {
+export default function discernActionInputErrorReason(
+  error: unknown,
+  context: actionInputErrorContext
+): string {
   if (!(error instanceof Error)) {
     if (error instanceof String) return `Unknown: ${error}}`
-    return "Unknown: thrown value not an Error"
+    return 'Unknown: thrown value not an Error'
   }
 
   return `${error.name}: ${error.message}`
