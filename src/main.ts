@@ -84,7 +84,11 @@ export class AuthenticateSteamCMD {
     )
     core.info('Steam config.vdf decoded.')
 
-    const steamHome = this.getInputOrDefault('steam_home', () => '$HOME/Steam')
+    const steamHomeCompacted = this.getInputOrDefault(
+      'steam_home',
+      () => '$HOME/Steam'
+    )
+    const steamHome = await this.expandEnvVars(steamHomeCompacted)
     core.info(`Steam home is ${steamHome}`)
 
     const steamUsername = this.getRequiredInput('steam_username')
