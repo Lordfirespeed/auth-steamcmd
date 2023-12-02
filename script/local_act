@@ -5,6 +5,6 @@
 npm install
 npm run build
 
-act -P ubuntu-latest=catthehacker/ubuntu:act-latest
+act -P ubuntu-latest=catthehacker/ubuntu:act-latest --secret-file act-secrets.env -j test-action -W .github/workflows/ci.yml
 
 "$@"
