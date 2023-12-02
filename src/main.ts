@@ -164,10 +164,14 @@ export class AuthenticateSteamCMD {
   async testLoginSucceeds(steamUsername: string) {
     core.info('Attempting SteamCMD login...')
     // U+0004: 'End of Transmission' - if prompted for a password, fail immediately
-    const loginExitCode = await exec.exec('steamcmd', ['+login', '+quit'], {
-      ignoreReturnCode: true,
-      input: Buffer.from('\u0004')
-    })
+    const loginExitCode = await exec.exec(
+      'steamcmd',
+      ['+login', steamUsername, '+quit'],
+      {
+        ignoreReturnCode: true,
+        input: Buffer.from('\u0004')
+      }
+    )
 
     if (loginExitCode === 0) {
       console.info('Login succeeded.')
