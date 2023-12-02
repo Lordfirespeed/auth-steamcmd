@@ -11989,10 +11989,10 @@ function ActionLogGroup(groupTitle) {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     return function (target, propertyKey, descriptor) {
         const oldFunction = descriptor.value;
-        descriptor.value = function (...args) {
+        descriptor.value = async function (...args) {
             core.startGroup(groupTitle);
             try {
-                return oldFunction.apply(target, args);
+                return await oldFunction.apply(target, args);
             }
             finally {
                 core.endGroup();
@@ -12188,13 +12188,15 @@ class AuthenticateSteamCMD {
      * @returns {Promise<void>} Resolves when the action is complete.
      */
     async run() {
-        const task = (0, function_1.pipe)(this.getInputsTaskEither(), TE.bind('steamConfigDirectory', state => this.ensureSteamConfigDirTaskEither(state)), TE.bind('steamConfigFile', state => this.writeSteamConfigFileTaskEither(state)), TE.tap(state => this.testLoginSucceedsTaskEither(state)));
+        const task = (0, function_1.pipe)(this.getInputsTaskEither(), TE.bind('steamConfigDirectory', state => this.ensureSteamConfigDirTaskEither(state)), TE.bind('steamConfigFile', state => this.writeSteamConfigFileTaskEither(state)), TE.tap(state => this.testLoginSucceedsTaskEither(state)), TE.getOrElse(error => {
+            throw error;
+        }));
         await task();
     }
     getInputsTaskEither() {
         return TE.tryCatch(() => this.getInputs(), reason => reason);
     }
-    async getRequiredInput(key) {
+    getRequiredInput(key) {
         try {
             return core.getInput(key, { required: true });
         }
@@ -12203,8 +12205,15 @@ class AuthenticateSteamCMD {
             throw error;
         }
     }
+    getInputOrDefault(key, fallback) {
+        const provided = core.getInput(key);
+        if (provided)
+            return provided;
+        core.info(`Falling back to lazy default for ${key}`);
+        return fallback();
+    }
     async getInputs() {
-        const configValveDataFormatBase64Encoded = await this.getRequiredInput('steam_config_vdf');
+        const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf');
         if (!(0, is_base64_1.default)(configValveDataFormatBase64Encoded)) {
             core.error("Provided 'steam_config_vdf' input is not Base64 encoded. Aborting.");
             throw new Error("Encoding of 'steam_config_vdf' is not Base64.");
@@ -12212,9 +12221,9 @@ class AuthenticateSteamCMD {
         core.info('Decoding steam config.vdf contents...');
         const configValveDataFormat = Buffer.from(configValveDataFormatBase64Encoded, 'base64');
         core.info('Steam config.vdf decoded.');
-        const steamHome = await this.getRequiredInput('steam_home');
+        const steamHome = this.getInputOrDefault('steam_home', () => '$HOME/Steam');
         core.info(`Steam home is ${steamHome}`);
-        const steamUsername = await this.getRequiredInput('steam_username');
+        const steamUsername = this.getRequiredInput('steam_username');
         core.info('Got steam username.');
         core.info('Done.');
         return { configValveDataFormat, steamHome, steamUsername };
@@ -12263,7 +12272,7 @@ class AuthenticateSteamCMD {
     async testLoginSucceeds(steamUsername) {
         core.info('Attempting SteamCMD login...');
         // U+0004: 'End of Transmission' - if prompted for a password, fail immediately
-        const loginExitCode = await exec.exec('steamcmd', ['+login', '+quit'], {
+        const loginExitCode = await exec.exec('steamcmd', ['+login', steamUsername, '+quit'], {
             ignoreReturnCode: true,
             input: Buffer.from('\u0004')
         });
