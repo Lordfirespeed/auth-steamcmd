@@ -30,10 +30,13 @@ steps:
       +app_update 1337 validate +quit
 ```
 
-## Outputs
+## Inputs
 
-| name | description |
-|:----:|:-----------:|
+|       name       |           description            |             default              |
+|:----------------:|:--------------------------------:|:--------------------------------:|
+| steam_config_vdf | Base64 encoded `config.vdf` file | :warning: **required** :warning: |
+|  steam_username  | username of account to login as  | :warning: **required** :warning: |
+|    steam_home    |  steam configuration directory   |          `$HOME/Steam`           |
 
 ## Acknowledgements
 
