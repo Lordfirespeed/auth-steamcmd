@@ -25,6 +25,7 @@ steps:
     with:
       steam_config_vdf: ${{ secrets.steam_config_vdf }}
       steam_home: "path/to/steam/home"
+      steam_username: ${{ secrets.steam_username }}
 
   - name: Update licensed app
     run: steamcmd +login ${{ secrets.steam_username }} \
