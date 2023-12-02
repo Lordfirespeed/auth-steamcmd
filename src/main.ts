@@ -43,7 +43,7 @@ export class AuthenticateSteamCMD {
 
   getRequiredInput(key: string): string {
     try {
-      return core.getInput(key, { required: true })
+      return core.getInput(key, { required: true, trimWhitespace: true })
     } catch (error) {
       core.error(discernActionInputErrorReason(error, { inputKey: key }))
       throw error
@@ -51,7 +51,7 @@ export class AuthenticateSteamCMD {
   }
 
   getInputOrDefault(key: string, fallback: () => string): string {
-    const provided = core.getInput(key)
+    const provided = core.getInput(key, { trimWhitespace: true })
     if (provided) return provided
 
     core.info(`Falling back to lazy default for ${key}`)
