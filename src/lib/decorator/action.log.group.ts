@@ -9,10 +9,10 @@ export default function ActionLogGroup(groupTitle: string) {
   ) {
     const oldFunction = descriptor.value
 
-    descriptor.value = function (...args: unknown[]) {
+    descriptor.value = async function (...args: unknown[]) {
       core.startGroup(groupTitle)
       try {
-        return oldFunction.apply(target, args)
+        return await oldFunction.apply(target, args)
       } finally {
         core.endGroup()
       }
