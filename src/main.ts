@@ -58,6 +58,15 @@ export class AuthenticateSteamCMD {
     return fallback()
   }
 
+  async expandEnvVars(value: string): Promise<string> {
+    return await exec
+      .getExecOutput('bash', ['-c', `echo "${value}"`], {
+        ignoreReturnCode: false
+      })
+      .then(result => result.stdout)
+      .then(stdout => stdout.trim())
+  }
+
   @ActionLogGroup('Getting inputs')
   async getInputs() {
     const configValveDataFormatBase64Encoded =
