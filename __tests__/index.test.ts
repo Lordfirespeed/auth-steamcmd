@@ -9,10 +9,10 @@ import * as core from '@actions/core'
 const mockRun = jest.fn()
 
 // Mock the 'main' module
-jest.mock("../src/main", () => {
+jest.mock('../src/main', () => {
   return jest.fn().mockImplementation(() => {
-      return { run: mockRun }
-    })
+    return { run: mockRun }
+  })
 })
 
 // Mock the GitHub Actions core library
@@ -26,12 +26,14 @@ describe('index', () => {
   })
 
   it('calls run when imported and reports failure when an error is thrown', async () => {
-    const runComplete = Promise.reject();
+    const runComplete = Promise.reject()
     mockRun.mockImplementation(() => runComplete)
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../src/index')
-    await runComplete.catch(() => { return });
+    await runComplete.catch(() => {
+      return
+    })
 
     expect(AuthenticateSteamCMD).toHaveBeenCalled()
     expect(mockRun).toHaveBeenCalled()
