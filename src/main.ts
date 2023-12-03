@@ -138,7 +138,7 @@ export default class AuthenticateSteamCMD {
 
   async writeFile(
     file: string,
-    content: Buffer,
+    content: string | Uint8Array,
     options: Parameters<fs.FileHandle['writeFile']>[1] = null
   ) {
     if (typeof options === 'string') {
