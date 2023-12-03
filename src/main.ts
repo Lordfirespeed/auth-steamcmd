@@ -17,19 +17,21 @@ export default class AuthenticateSteamCMD {
    * The main function for the action.
    * @returns {Promise<void>} Resolves when the action is complete.
    */
-  run = pipe(
-    this.getInputsTaskEither(),
-    TE.bindW('steamConfigDirectory', state =>
-      this.ensureSteamConfigDirTaskEither(state)
-    ),
-    TE.bindW('steamConfigFile', state =>
-      this.writeSteamConfigFileTaskEither(state)
-    ),
-    TE.tap(state => this.testLoginSucceedsTaskEither(state)),
-    TE.getOrElse(error => {
-      throw error
-    })
-  )
+  async run() {
+    await pipe(
+      this.getInputsTaskEither(),
+      TE.bindW('steamConfigDirectory', state =>
+        this.ensureSteamConfigDirTaskEither(state)
+      ),
+      TE.bindW('steamConfigFile', state =>
+        this.writeSteamConfigFileTaskEither(state)
+      ),
+      TE.tap(state => this.testLoginSucceedsTaskEither(state)),
+      TE.getOrElse(error => {
+        throw error
+      })
+    )()
+  }
 
   getInputsTaskEither() {
     return TE.tryCatch(
