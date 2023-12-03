@@ -11922,14 +11922,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 /**
  * The entrypoint for the action.
  */
 const core = __importStar(__nccwpck_require__(2186));
-const main_1 = __nccwpck_require__(399);
+const main_1 = __importDefault(__nccwpck_require__(399));
 async function wrap_install() {
-    await new main_1.AuthenticateSteamCMD().run().catch(error => core.setFailed(error));
+    await new main_1.default().run().catch(error => core.setFailed(error));
 }
 void wrap_install();
 
@@ -12173,7 +12176,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AuthenticateSteamCMD = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const path_1 = __importDefault(__nccwpck_require__(1017));
@@ -12188,10 +12190,9 @@ class AuthenticateSteamCMD {
      * @returns {Promise<void>} Resolves when the action is complete.
      */
     async run() {
-        const task = (0, function_1.pipe)(this.getInputsTaskEither(), TE.bindW('steamConfigDirectory', state => this.ensureSteamConfigDirTaskEither(state)), TE.bindW('steamConfigFile', state => this.writeSteamConfigFileTaskEither(state)), TE.tap(state => this.testLoginSucceedsTaskEither(state)), TE.getOrElse(error => {
+        await (0, function_1.pipe)(this.getInputsTaskEither(), TE.bindW('steamConfigDirectory', state => this.ensureSteamConfigDirTaskEither(state)), TE.bindW('steamConfigFile', state => this.writeSteamConfigFileTaskEither(state)), TE.tap(state => this.testLoginSucceedsTaskEither(state)), TE.getOrElse(error => {
             throw error;
-        }));
-        await task();
+        }))();
     }
     getInputsTaskEither() {
         return TE.tryCatch(() => this.getInputs(), reason => reason);
@@ -12287,7 +12288,7 @@ class AuthenticateSteamCMD {
     async writeSteamConfigFile(steamConfigDirectory, configValveDataFormat) {
         const steamConfigFile = path_1.default.join(steamConfigDirectory, 'config.vdf');
         try {
-            await this.writeFile(steamConfigFile, configValveDataFormat, {
+            return await this.writeFile(steamConfigFile, configValveDataFormat, {
                 encoding: 'ascii',
                 mode: 0o777
             });
@@ -12321,7 +12322,7 @@ class AuthenticateSteamCMD {
         throw new Error('Failed to login with SteamCMD');
     }
 }
-exports.AuthenticateSteamCMD = AuthenticateSteamCMD;
+exports["default"] = AuthenticateSteamCMD;
 __decorate([
     (0, lib_1.ActionLogGroup)('Getting inputs'),
     __metadata("design:type", Function),
