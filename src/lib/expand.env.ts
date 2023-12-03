@@ -1,6 +1,6 @@
 // https://github.com/taterbase/node-expandenv/blob/56ec358f/index.js#L3
-export default function expandEnv(value: string, env: Map<string, string>) {
-  const mergedEnv = mapUnion(new Map(), env.entries(), [["a", "b"]])
+export default function expandEnv(value: string, env: Map<string, string> | undefined = undefined) {
+  const mergedEnv = mapUnion(new Map(), env?.entries() || [])
 
   return value.replace(/\$\w+/g, match => {
     return mergedEnv.get(match.replace('$', '')) || match
