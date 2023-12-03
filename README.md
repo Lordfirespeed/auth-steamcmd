@@ -45,7 +45,7 @@ steps:
 
 ## Todo
 
-- [] Update the Action Metadata
-- [] Update the Action Code
-- [] Validate/Test the action
-- [] Publish release
+[ ] Update the Action Metadata
+[ ] Update the Action Code
+[ ] Validate/Test the action
+[ ] Publish release
