@@ -17,22 +17,19 @@ export default class AuthenticateSteamCMD {
    * The main function for the action.
    * @returns {Promise<void>} Resolves when the action is complete.
    */
-  async run(): Promise<void> {
-    const task = pipe(
-      this.getInputsTaskEither(),
-      TE.bindW('steamConfigDirectory', state =>
-        this.ensureSteamConfigDirTaskEither(state)
-      ),
-      TE.bindW('steamConfigFile', state =>
-        this.writeSteamConfigFileTaskEither(state)
-      ),
-      TE.tap(state => this.testLoginSucceedsTaskEither(state)),
-      TE.getOrElse(error => {
-        throw error
-      })
-    )
-    await task()
-  }
+  run = pipe(
+    this.getInputsTaskEither(),
+    TE.bindW('steamConfigDirectory', state =>
+      this.ensureSteamConfigDirTaskEither(state)
+    ),
+    TE.bindW('steamConfigFile', state =>
+      this.writeSteamConfigFileTaskEither(state)
+    ),
+    TE.tap(state => this.testLoginSucceedsTaskEither(state)),
+    TE.getOrElse(error => {
+      throw error
+    })
+  )
 
   getInputsTaskEither() {
     return TE.tryCatch(
@@ -181,7 +178,7 @@ export default class AuthenticateSteamCMD {
   ) {
     const steamConfigFile = path.join(steamConfigDirectory, 'config.vdf')
     try {
-      await this.writeFile(steamConfigFile, configValveDataFormat, {
+      return await this.writeFile(steamConfigFile, configValveDataFormat, {
         encoding: 'ascii',
         mode: 0o777
       })
