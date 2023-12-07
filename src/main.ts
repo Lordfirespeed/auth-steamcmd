@@ -109,7 +109,6 @@ export default class AuthenticateSteamCMD {
     const steamConfigDir = path.join(steamHome, 'config')
     try {
       core.info(`Ensuring directory ${steamConfigDir}...`)
-      // will not throw if directory already exists
       await fs.mkdir(steamConfigDir, { recursive: true })
       core.info('Done.')
       return steamConfigDir
