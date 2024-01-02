@@ -4,17 +4,11 @@
 
 import * as core from '@actions/core'
 
+// @ts-expect-error TS does not understand Jest mocking
+import { runMock } from '../src/main'
 import wrap_install from '../src/index'
 
-// Mock the action's entrypoint
-const mockRun = jest.fn()
-
-// Mock the 'main' module
-jest.mock('../src/main', () => {
-  return jest.fn().mockImplementation(() => {
-    return { run: mockRun }
-  })
-})
+jest.mock('../src/main')
 
 // Mock the GitHub Actions core library
 let setFailedMock: jest.SpyInstance
@@ -28,7 +22,7 @@ describe('index', () => {
 
   it('reports failure on error', async () => {
     const runComplete = Promise.reject(new Error())
-    mockRun.mockImplementation(async () => await runComplete)
+    runMock.mockImplementation(async () => await runComplete)
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     try {
