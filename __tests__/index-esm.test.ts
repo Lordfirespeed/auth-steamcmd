@@ -2,8 +2,9 @@
  * Unit tests for the action's entrypoint, src/index.ts
  */
 
-import AuthenticateSteamCMD from '../src/main'
 import * as core from '@actions/core'
+
+import wrap_install from '../src/index'
 
 // Mock the action's entrypoint
 const mockRun = jest.fn()
@@ -25,21 +26,18 @@ describe('index', () => {
     setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
   })
 
-  it('calls run when imported and reports failure when an error is thrown', async () => {
+  it('reports failure on error', async () => {
     const runComplete = Promise.reject(new Error())
     mockRun.mockImplementation(async () => await runComplete)
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require('../src/index')
     try {
-      await runComplete
+      await wrap_install()
     } catch {
       //https://stackoverflow.com/a/33458430/11045433
       Function.prototype()
     }
 
-    expect(AuthenticateSteamCMD).toHaveBeenCalled()
-    expect(mockRun).toHaveBeenCalled()
     expect(setFailedMock).toHaveBeenCalled()
   })
 })
