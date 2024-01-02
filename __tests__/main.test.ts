@@ -35,13 +35,13 @@ let expandEnvVarsMock: jest.SpyInstance<
 // Other utilities
 
 // Mock the GitHub Actions core library
-let coreStartGroupMock: jest.SpyInstance
-let coreEndGroupMock: jest.SpyInstance
-let coreDebugMock: jest.SpyInstance
-let coreInfoMock: jest.SpyInstance
-let coreWarningMock: jest.SpyInstance
-let coreErrorMock: jest.SpyInstance
-let coreGetInputMock: jest.SpyInstance
+let _coreStartGroupMock: jest.SpyInstance
+let _coreEndGroupMock: jest.SpyInstance
+let _coreDebugMock: jest.SpyInstance
+let _coreInfoMock: jest.SpyInstance
+let _coreWarningMock: jest.SpyInstance
+let _coreErrorMock: jest.SpyInstance
+let _coreGetInputMock: jest.SpyInstance
 
 // Mock the GitHub Actions execution library
 let execExecMock: jest.SpyInstance
@@ -49,8 +49,8 @@ let execGetExecOutputMock: jest.SpyInstance
 
 // Mock fs/promises module
 jest.mock('fs/promises')
-let fsMkdirMock: jest.SpyInstance
-let fsOpenMock: jest.SpyInstance
+let _fsMkdirMock: jest.SpyInstance
+let _fsOpenMock: jest.SpyInstance
 let fsFileHandleWriteFileMock: jest.Mock
 let fsFileHandleChmodMock: jest.Mock
 let fsFileHandleCloseMock: jest.Mock
@@ -58,11 +58,11 @@ let fsFileHandleCloseMock: jest.Mock
 describe('action', () => {
   const originalProcessEnv = process.env
 
-  function mockInputs(inputs: Map<string, string>) {
-    inputs.forEach((value, key) => {
+  function mockInputs(inputs: Map<string, string>): void {
+    for (const [key, value] of inputs) {
       // https://github.com/actions/toolkit/blob/8f1c589/packages/core/src/core.ts#L128
       process.env[`INPUT_${key.replace(/ /g, '_').toUpperCase()}`] = value
-    })
+    }
   }
 
   beforeEach(() => {
@@ -85,13 +85,13 @@ describe('action', () => {
     writeFileMock = jest.spyOn(AuthenticateSteamCMD.prototype, 'writeFile')
     expandEnvVarsMock = jest.spyOn(AuthenticateSteamCMD.prototype, 'expandEnvVars')
 
-    coreStartGroupMock = jest.spyOn(core, 'startGroup').mockImplementation()
-    coreEndGroupMock = jest.spyOn(core, 'endGroup').mockImplementation()
-    coreDebugMock = jest.spyOn(core, 'debug').mockImplementation()
-    coreInfoMock = jest.spyOn(core, 'info').mockImplementation()
-    coreWarningMock = jest.spyOn(core, 'warning').mockImplementation()
-    coreErrorMock = jest.spyOn(core, 'error').mockImplementation()
-    coreGetInputMock = jest.spyOn(core, 'getInput')
+    _coreStartGroupMock = jest.spyOn(core, 'startGroup').mockImplementation()
+    _coreEndGroupMock = jest.spyOn(core, 'endGroup').mockImplementation()
+    _coreDebugMock = jest.spyOn(core, 'debug').mockImplementation()
+    _coreInfoMock = jest.spyOn(core, 'info').mockImplementation()
+    _coreWarningMock = jest.spyOn(core, 'warning').mockImplementation()
+    _coreErrorMock = jest.spyOn(core, 'error').mockImplementation()
+    _coreGetInputMock = jest.spyOn(core, 'getInput')
 
     execExecMock = jest.spyOn(exec, 'exec').mockResolvedValue(0)
     execGetExecOutputMock = jest.spyOn(exec, 'getExecOutput').mockResolvedValue({
@@ -100,17 +100,15 @@ describe('action', () => {
       stderr: '[stderr]'
     })
 
-    fsMkdirMock = jest
+    _fsMkdirMock = jest
       .spyOn(fs, 'mkdir')
-      .mockImplementation((filename: PathLike, options: Parameters<typeof fs.mkdir>[1]) =>
-        Promise.resolve(filename.toString())
-      )
+      .mockImplementation(async (filename: PathLike, _options: Parameters<typeof fs.mkdir>[1]) => filename.toString())
 
-    fsFileHandleWriteFileMock = jest.fn((...args: Parameters<FileHandle['writeFile']>) => Promise.resolve())
-    fsFileHandleChmodMock = jest.fn((...args: Parameters<FileHandle['chmod']>) => Promise.resolve())
-    fsFileHandleCloseMock = jest.fn((...args: Parameters<FileHandle['close']>) => Promise.resolve())
+    fsFileHandleWriteFileMock = jest.fn(async (..._args: Parameters<FileHandle['writeFile']>) => Promise.resolve())
+    fsFileHandleChmodMock = jest.fn(async (..._args: Parameters<FileHandle['chmod']>) => Promise.resolve())
+    fsFileHandleCloseMock = jest.fn(async (..._args: Parameters<FileHandle['close']>) => Promise.resolve())
 
-    fsOpenMock = jest.spyOn(fs, 'open').mockImplementation(async (...args: Parameters<typeof fs.open>) => {
+    _fsOpenMock = jest.spyOn(fs, 'open').mockImplementation(async (..._args: Parameters<typeof fs.open>) => {
       return {
         fd: 0,
         appendFile: jest.fn(),
@@ -152,6 +150,7 @@ describe('action', () => {
     expandEnvVarsMock.mockImplementationOnce(async value => expandEnv(value))
     writeFileMock.mockImplementation()
 
+    // eslint-disable-next-line github/no-then
     await runner.run().catch()
     expect(runMock).toHaveReturned()
 
@@ -171,6 +170,7 @@ describe('action', () => {
     const steam_username = 'some_really_random_username'
     mockInputs(new Map().set('steam_username', steam_username))
 
+    // eslint-disable-next-line github/no-then
     await runner.run().catch()
     expect(runMock).toHaveReturned()
 
@@ -233,6 +233,7 @@ describe('action', () => {
 
   describe('writeFile', () => {
     it('opens file handle, writes contents, and closes the handle', async () => {
+      // eslint-disable-next-line github/no-then
       await runner.writeFile('/some/interesting/file', 'really interesting contents').catch()
       expect(writeFileMock).toHaveReturned()
 
@@ -244,6 +245,7 @@ describe('action', () => {
     it('opens the passed filename', async () => {
       const filename = '/golden/goose/files'
 
+      // eslint-disable-next-line github/no-then
       await runner.writeFile(filename, 'really interesting contents').catch()
       expect(writeFileMock).toHaveReturned()
 
@@ -256,6 +258,7 @@ describe('action', () => {
         encoding: 'ascii'
       }
 
+      // eslint-disable-next-line github/no-then
       await runner.writeFile('/some/interesting/file', contents, options).catch()
       expect(writeFileMock).toHaveReturned()
 
@@ -279,6 +282,7 @@ describe('action', () => {
         .writeFile('/some/interesting/file', 'really interesting contents', {
           mode: fileMode
         })
+        // eslint-disable-next-line github/no-then
         .catch()
       expect(writeFileMock).toHaveReturned()
 
@@ -286,6 +290,7 @@ describe('action', () => {
     })
 
     it('does not modify file permissions when option is omitted', async () => {
+      // eslint-disable-next-line github/no-then
       await runner.writeFile('/some/interesting/file', 'really interesting contents').catch()
       expect(writeFileMock).toHaveReturned()
 
