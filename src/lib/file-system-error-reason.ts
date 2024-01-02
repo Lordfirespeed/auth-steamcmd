@@ -1,4 +1,4 @@
-import isErrnoException from './is.errno.exception'
+import isErrnoException from './is-errno-exception'
 
 type fileSystemErrorContext = {
   file: string

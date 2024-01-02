@@ -14,7 +14,7 @@ import { PathLike } from 'fs'
 import fs, { FileHandle } from 'fs/promises'
 
 import AuthenticateSteamCMD from '../src/main'
-import expandEnv from '../src/lib/expand.env'
+import expandEnv from '../src/lib/expand-env'
 
 // Mock the action's main function
 let runner: AuthenticateSteamCMD
