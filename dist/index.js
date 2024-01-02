@@ -11940,6 +11940,7 @@ async function wrap_install() {
         (0, type_safe_error_1.default)(error, core.setFailed);
     }
 }
+exports["default"] = wrap_install;
 void wrap_install();
 
 
