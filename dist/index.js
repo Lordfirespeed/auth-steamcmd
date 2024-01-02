@@ -11939,7 +11939,7 @@ void wrap_install();
 
 /***/ }),
 
-/***/ 4081:
+/***/ 324:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -11958,7 +11958,7 @@ exports["default"] = discernActionInputErrorReason;
 
 /***/ }),
 
-/***/ 1874:
+/***/ 2223:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -12018,13 +12018,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ActionLogGroup = void 0;
-var action_log_group_1 = __nccwpck_require__(1874);
+var action_log_group_1 = __nccwpck_require__(2223);
 Object.defineProperty(exports, "ActionLogGroup", ({ enumerable: true, get: function () { return __importDefault(action_log_group_1).default; } }));
 
 
 /***/ }),
 
-/***/ 6043:
+/***/ 1125:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -12033,7 +12033,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const is_errno_exception_1 = __importDefault(__nccwpck_require__(6309));
+const is_errno_exception_1 = __importDefault(__nccwpck_require__(8372));
 // https://nodejs.org/api/errors.html#common-system-errors
 function reasonBySystemErrorCode(errorCode, context) {
     switch (errorCode) {
@@ -12101,17 +12101,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isErrnoException = exports.discernActionInputErrorReason = exports.discernFileSystemErrorReason = void 0;
 __exportStar(__nccwpck_require__(1682), exports);
-var file_system_error_reason_1 = __nccwpck_require__(6043);
+var file_system_error_reason_1 = __nccwpck_require__(1125);
 Object.defineProperty(exports, "discernFileSystemErrorReason", ({ enumerable: true, get: function () { return __importDefault(file_system_error_reason_1).default; } }));
-var action_input_error_reason_1 = __nccwpck_require__(4081);
+var action_input_error_reason_1 = __nccwpck_require__(324);
 Object.defineProperty(exports, "discernActionInputErrorReason", ({ enumerable: true, get: function () { return __importDefault(action_input_error_reason_1).default; } }));
-var is_errno_exception_1 = __nccwpck_require__(6309);
+var is_errno_exception_1 = __nccwpck_require__(8372);
 Object.defineProperty(exports, "isErrnoException", ({ enumerable: true, get: function () { return __importDefault(is_errno_exception_1).default; } }));
 
 
 /***/ }),
 
-/***/ 6309:
+/***/ 8372:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -12195,7 +12195,7 @@ class AuthenticateSteamCMD {
         }))();
     }
     getInputsTaskEither() {
-        return TE.tryCatch(() => this.getInputs(), reason => reason);
+        return TE.tryCatch(async () => await this.getInputs(), reason => reason);
     }
     getRequiredInput(key) {
         try {
@@ -12214,15 +12214,12 @@ class AuthenticateSteamCMD {
         return fallback();
     }
     async expandEnvVars(value) {
-        return await exec
-            .getExecOutput('bash', ['-c', `echo "${value}"`], {
+        return (await exec.getExecOutput('bash', ['-c', `echo "${value}"`], {
             ignoreReturnCode: false
-        })
-            .then(result => result.stdout)
-            .then(stdout => stdout.trim());
+        })).stdout.trim();
     }
     async getInputs() {
-        const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf');
+        const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf').replaceAll(/\s+/, '');
         if (!(0, is_base64_1.default)(configValveDataFormatBase64Encoded)) {
             core.error("Provided 'steam_config_vdf' input is not Base64 encoded. Aborting.");
             throw new Error("Encoding of 'steam_config_vdf' is not Base64.");
@@ -12239,24 +12236,25 @@ class AuthenticateSteamCMD {
         return { configValveDataFormat, steamHome, steamUsername };
     }
     ensureSteamConfigDirTaskEither({ steamHome }) {
-        return TE.tryCatch(() => this.ensureSteamConfigDir(steamHome), reason => reason);
+        return TE.tryCatch(async () => await this.ensureSteamConfigDir(steamHome), reason => reason);
     }
     async ensureSteamConfigDir(steamHome) {
         const steamConfigDir = path_1.default.join(steamHome, 'config');
         try {
             core.info(`Ensuring directory ${steamConfigDir}...`);
-            // will not throw if directory already exists
             await promises_1.default.mkdir(steamConfigDir, { recursive: true });
             core.info('Done.');
             return steamConfigDir;
         }
         catch (error) {
-            core.error(`Couldn't ensure steam config directory. Reason: ${(0, lib_1.discernFileSystemErrorReason)(error, { file: steamConfigDir })}`);
+            core.error(`Couldn't ensure steam config directory. Reason: ${(0, lib_1.discernFileSystemErrorReason)(error, {
+                file: steamConfigDir
+            })}`);
             throw error;
         }
     }
     writeSteamConfigFileTaskEither({ steamConfigDirectory, configValveDataFormat }) {
-        return TE.tryCatch(() => this.writeSteamConfigFile(steamConfigDirectory, configValveDataFormat), reason => reason);
+        return TE.tryCatch(async () => await this.writeSteamConfigFile(steamConfigDirectory, configValveDataFormat), reason => reason);
     }
     async writeFile(file, content, options = null) {
         if (typeof options === 'string') {
@@ -12299,18 +12297,12 @@ class AuthenticateSteamCMD {
         }
     }
     testLoginSucceedsTaskEither({ steamUsername }) {
-        return TE.tryCatch(() => this.testLoginSucceeds(steamUsername), reason => reason);
+        return TE.tryCatch(async () => await this.testLoginSucceeds(steamUsername), reason => reason);
     }
     async testLoginSucceeds(steamUsername) {
         core.info('Attempting SteamCMD login...');
         // U+0004: 'End of Transmission' - if prompted for a password, fail immediately
-        const loginExitCode = await exec.exec('steamcmd', [
-            '+set_steam_guard_code',
-            'INVALID',
-            '+login',
-            `${steamUsername}`,
-            '+quit'
-        ], {
+        const loginExitCode = await exec.exec('steamcmd', ['+set_steam_guard_code', 'INVALID', '+login', `${steamUsername}`, '+quit'], {
             ignoreReturnCode: true,
             input: Buffer.from('\u0004')
         });
