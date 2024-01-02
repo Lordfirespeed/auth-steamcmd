@@ -26,14 +26,17 @@ describe('index', () => {
   })
 
   it('calls run when imported and reports failure when an error is thrown', async () => {
-    const runComplete = Promise.reject()
-    mockRun.mockImplementation(() => runComplete)
+    const runComplete = Promise.reject(new Error())
+    mockRun.mockImplementation(async () => await runComplete)
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../src/index')
-    await runComplete.catch(() => {
-      return
-    })
+    try {
+      await runComplete
+    } catch {
+      //https://stackoverflow.com/a/33458430/11045433
+      Function.prototype()
+    }
 
     expect(AuthenticateSteamCMD).toHaveBeenCalled()
     expect(mockRun).toHaveBeenCalled()
