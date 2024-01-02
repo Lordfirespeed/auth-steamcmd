@@ -4,9 +4,14 @@
 import * as core from '@actions/core'
 
 import AuthenticateSteamCMD from './main'
+import typeSafeError from './lib/type-safe-error'
 
-async function wrap_install() {
-  await new AuthenticateSteamCMD().run().catch(error => core.setFailed(error))
+async function wrap_install(): Promise<void> {
+  try {
+    await new AuthenticateSteamCMD().run()
+  } catch (error) {
+    typeSafeError(error, core.setFailed)
+  }
 }
 
 void wrap_install()
