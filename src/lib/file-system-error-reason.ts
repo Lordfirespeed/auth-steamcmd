@@ -5,10 +5,7 @@ type fileSystemErrorContext = {
 }
 
 // https://nodejs.org/api/errors.html#common-system-errors
-function reasonBySystemErrorCode(
-  errorCode: string,
-  context: fileSystemErrorContext
-): string | undefined {
+function reasonBySystemErrorCode(errorCode: string, context: fileSystemErrorContext): string | undefined {
   switch (errorCode) {
     case 'EACCESS':
       return `Permission denied to ${context.file}. Access of the requested type is forbidden by file permissions.`
@@ -31,10 +28,7 @@ function reasonBySystemErrorCode(
   }
 }
 
-export default function discernFileSystemErrorReason(
-  error: unknown,
-  context: fileSystemErrorContext
-): string {
+export default function discernFileSystemErrorReason(error: unknown, context: fileSystemErrorContext): string {
   if (!(error instanceof Error)) {
     if (error instanceof String) return `Unknown: ${error}}`
     return 'Unknown: thrown value not an Error'

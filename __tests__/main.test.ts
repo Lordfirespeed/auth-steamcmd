@@ -18,10 +18,7 @@ import expandEnv from '../src/lib/expand-env'
 
 // Mock the action's main function
 let runner: AuthenticateSteamCMD
-let runMock: jest.SpyInstance<
-  ReturnType<AuthenticateSteamCMD['run']>,
-  Parameters<AuthenticateSteamCMD['run']>
->
+let runMock: jest.SpyInstance<ReturnType<AuthenticateSteamCMD['run']>, Parameters<AuthenticateSteamCMD['run']>>
 let getInputsMock: jest.SpyInstance<
   ReturnType<AuthenticateSteamCMD['getInputs']>,
   Parameters<AuthenticateSteamCMD['getInputs']>
@@ -86,10 +83,7 @@ describe('action', () => {
 
     getInputsMock = jest.spyOn(AuthenticateSteamCMD.prototype, 'getInputs')
     writeFileMock = jest.spyOn(AuthenticateSteamCMD.prototype, 'writeFile')
-    expandEnvVarsMock = jest.spyOn(
-      AuthenticateSteamCMD.prototype,
-      'expandEnvVars'
-    )
+    expandEnvVarsMock = jest.spyOn(AuthenticateSteamCMD.prototype, 'expandEnvVars')
 
     coreStartGroupMock = jest.spyOn(core, 'startGroup').mockImplementation()
     coreEndGroupMock = jest.spyOn(core, 'endGroup').mockImplementation()
@@ -100,58 +94,47 @@ describe('action', () => {
     coreGetInputMock = jest.spyOn(core, 'getInput')
 
     execExecMock = jest.spyOn(exec, 'exec').mockResolvedValue(0)
-    execGetExecOutputMock = jest
-      .spyOn(exec, 'getExecOutput')
-      .mockResolvedValue({
-        exitCode: 0,
-        stdout: '[stdout]',
-        stderr: '[stderr]'
-      })
+    execGetExecOutputMock = jest.spyOn(exec, 'getExecOutput').mockResolvedValue({
+      exitCode: 0,
+      stdout: '[stdout]',
+      stderr: '[stderr]'
+    })
 
     fsMkdirMock = jest
       .spyOn(fs, 'mkdir')
-      .mockImplementation(
-        (filename: PathLike, options: Parameters<typeof fs.mkdir>[1]) =>
-          Promise.resolve(filename.toString())
+      .mockImplementation((filename: PathLike, options: Parameters<typeof fs.mkdir>[1]) =>
+        Promise.resolve(filename.toString())
       )
 
-    fsFileHandleWriteFileMock = jest.fn(
-      (...args: Parameters<FileHandle['writeFile']>) => Promise.resolve()
-    )
-    fsFileHandleChmodMock = jest.fn(
-      (...args: Parameters<FileHandle['chmod']>) => Promise.resolve()
-    )
-    fsFileHandleCloseMock = jest.fn(
-      (...args: Parameters<FileHandle['close']>) => Promise.resolve()
-    )
+    fsFileHandleWriteFileMock = jest.fn((...args: Parameters<FileHandle['writeFile']>) => Promise.resolve())
+    fsFileHandleChmodMock = jest.fn((...args: Parameters<FileHandle['chmod']>) => Promise.resolve())
+    fsFileHandleCloseMock = jest.fn((...args: Parameters<FileHandle['close']>) => Promise.resolve())
 
-    fsOpenMock = jest
-      .spyOn(fs, 'open')
-      .mockImplementation(async (...args: Parameters<typeof fs.open>) => {
-        return {
-          fd: 0,
-          appendFile: jest.fn(),
-          chown: jest.fn(),
-          chmod: fsFileHandleChmodMock,
-          createReadStream: jest.fn(),
-          createWriteStream: jest.fn(),
-          datasync: jest.fn(),
-          sync: jest.fn(),
-          read: jest.fn(),
-          readableWebStream: jest.fn(),
-          readFile: jest.fn(),
-          readLines: jest.fn(),
-          stat: jest.fn(),
-          truncate: jest.fn(),
-          utimes: jest.fn(),
-          writeFile: fsFileHandleWriteFileMock,
-          write: jest.fn(),
-          writev: jest.fn(),
-          readv: jest.fn(),
-          close: fsFileHandleCloseMock,
-          [Symbol.asyncDispose]: jest.fn()
-        }
-      })
+    fsOpenMock = jest.spyOn(fs, 'open').mockImplementation(async (...args: Parameters<typeof fs.open>) => {
+      return {
+        fd: 0,
+        appendFile: jest.fn(),
+        chown: jest.fn(),
+        chmod: fsFileHandleChmodMock,
+        createReadStream: jest.fn(),
+        createWriteStream: jest.fn(),
+        datasync: jest.fn(),
+        sync: jest.fn(),
+        read: jest.fn(),
+        readableWebStream: jest.fn(),
+        readFile: jest.fn(),
+        readLines: jest.fn(),
+        stat: jest.fn(),
+        truncate: jest.fn(),
+        utimes: jest.fn(),
+        writeFile: fsFileHandleWriteFileMock,
+        write: jest.fn(),
+        writev: jest.fn(),
+        readv: jest.fn(),
+        close: fsFileHandleCloseMock,
+        [Symbol.asyncDispose]: jest.fn()
+      }
+    })
   })
 
   afterEach(() => {
@@ -164,11 +147,7 @@ describe('action', () => {
     const steam_home = '/really/random/Steam'
     const roundTripValue = Buffer.from('Hello World!')
     const encodedRoundTripValue = roundTripValue.toString('base64')
-    mockInputs(
-      new Map()
-        .set('steam_home', steam_home)
-        .set('steam_config_vdf', encodedRoundTripValue)
-    )
+    mockInputs(new Map().set('steam_home', steam_home).set('steam_config_vdf', encodedRoundTripValue))
 
     expandEnvVarsMock.mockImplementationOnce(async value => expandEnv(value))
     writeFileMock.mockImplementation()
@@ -216,12 +195,7 @@ describe('action', () => {
     })
 
     it('rejects when provided steam_config_vdf input that is not base64 encoded', async () => {
-      mockInputs(
-        new Map().set(
-          'steam_config_vdf',
-          'Really really not base64 encoded, lol'
-        )
-      )
+      mockInputs(new Map().set('steam_config_vdf', 'Really really not base64 encoded, lol'))
 
       await expect(runner.getInputs()).rejects.toThrow(/Base64/i)
     })
@@ -259,9 +233,7 @@ describe('action', () => {
 
   describe('writeFile', () => {
     it('opens file handle, writes contents, and closes the handle', async () => {
-      await runner
-        .writeFile('/some/interesting/file', 'really interesting contents')
-        .catch()
+      await runner.writeFile('/some/interesting/file', 'really interesting contents').catch()
       expect(writeFileMock).toHaveReturned()
 
       expect(fs.open).toHaveBeenCalled()
@@ -275,41 +247,26 @@ describe('action', () => {
       await runner.writeFile(filename, 'really interesting contents').catch()
       expect(writeFileMock).toHaveReturned()
 
-      expect(fs.open).toHaveBeenCalledWith(
-        filename,
-        expect.any(String),
-        undefined
-      )
+      expect(fs.open).toHaveBeenCalledWith(filename, expect.any(String), undefined)
     })
 
     it('passes through content and options to writeFile', async () => {
-      const contents =
-        'According to all known laws of aviation, there is no way a bee should be able to fly.'
+      const contents = 'According to all known laws of aviation, there is no way a bee should be able to fly.'
       const options: { encoding: BufferEncoding } = {
         encoding: 'ascii'
       }
 
-      await runner
-        .writeFile('/some/interesting/file', contents, options)
-        .catch()
+      await runner.writeFile('/some/interesting/file', contents, options).catch()
       expect(writeFileMock).toHaveReturned()
 
-      expect(fsFileHandleWriteFileMock).toHaveBeenCalledWith(
-        contents,
-        expect.any(Object)
-      )
+      expect(fsFileHandleWriteFileMock).toHaveBeenCalledWith(contents, expect.any(Object))
       expect(fsFileHandleWriteFileMock.mock.lastCall[1]).toBe(options)
     })
 
     it('closes an open file handle when an error is thrown', async () => {
       fsFileHandleWriteFileMock.mockRejectedValue(new Error())
 
-      await expect(
-        runner.writeFile(
-          '/some/interesting/file',
-          'really interesting contents'
-        )
-      ).rejects.toThrow()
+      await expect(runner.writeFile('/some/interesting/file', 'really interesting contents')).rejects.toThrow()
 
       expect(fs.open).toHaveBeenCalled()
       expect(fsFileHandleCloseMock).toHaveBeenCalled()
@@ -329,9 +286,7 @@ describe('action', () => {
     })
 
     it('does not modify file permissions when option is omitted', async () => {
-      await runner
-        .writeFile('/some/interesting/file', 'really interesting contents')
-        .catch()
+      await runner.writeFile('/some/interesting/file', 'really interesting contents').catch()
       expect(writeFileMock).toHaveReturned()
 
       expect(fsFileHandleChmodMock).not.toHaveBeenCalled()

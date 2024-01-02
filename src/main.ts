@@ -6,11 +6,7 @@ import { pipe } from 'fp-ts/function'
 import * as TE from 'fp-ts/TaskEither'
 import isBase64 from 'is-base64'
 
-import {
-  ActionLogGroup,
-  discernFileSystemErrorReason,
-  discernActionInputErrorReason
-} from './lib'
+import { ActionLogGroup, discernFileSystemErrorReason, discernActionInputErrorReason } from './lib'
 
 type ActionInputs = {
   configValveDataFormat: Buffer
@@ -26,12 +22,8 @@ export default class AuthenticateSteamCMD {
   async run(): Promise<void> {
     await pipe(
       this.getInputsTaskEither(),
-      TE.bindW('steamConfigDirectory', state =>
-        this.ensureSteamConfigDirTaskEither(state)
-      ),
-      TE.bindW('steamConfigFile', state =>
-        this.writeSteamConfigFileTaskEither(state)
-      ),
+      TE.bindW('steamConfigDirectory', state => this.ensureSteamConfigDirTaskEither(state)),
+      TE.bindW('steamConfigFile', state => this.writeSteamConfigFileTaskEither(state)),
       TE.tap(state => this.testLoginSucceedsTaskEither(state)),
       TE.getOrElse(error => {
         throw error
@@ -73,26 +65,16 @@ export default class AuthenticateSteamCMD {
 
   @ActionLogGroup('Getting inputs')
   async getInputs(): Promise<ActionInputs> {
-    const configValveDataFormatBase64Encoded = this.getRequiredInput(
-      'steam_config_vdf'
-    ).replaceAll(/\s+/, '')
+    const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf').replaceAll(/\s+/, '')
     if (!isBase64(configValveDataFormatBase64Encoded)) {
-      core.error(
-        "Provided 'steam_config_vdf' input is not Base64 encoded. Aborting."
-      )
+      core.error("Provided 'steam_config_vdf' input is not Base64 encoded. Aborting.")
       throw new Error("Encoding of 'steam_config_vdf' is not Base64.")
     }
     core.info('Decoding steam config.vdf contents...')
-    const configValveDataFormat = Buffer.from(
-      configValveDataFormatBase64Encoded,
-      'base64'
-    )
+    const configValveDataFormat = Buffer.from(configValveDataFormatBase64Encoded, 'base64')
     core.info('Steam config.vdf decoded.')
 
-    const steamHomeCompacted = this.getInputOrDefault(
-      'steam_home',
-      () => '$HOME/Steam'
-    )
+    const steamHomeCompacted = this.getInputOrDefault('steam_home', () => '$HOME/Steam')
     const steamHome = await this.expandEnvVars(steamHomeCompacted)
     core.info(`Steam home is ${steamHome}`)
 
@@ -103,11 +85,7 @@ export default class AuthenticateSteamCMD {
     return { configValveDataFormat, steamHome, steamUsername }
   }
 
-  ensureSteamConfigDirTaskEither({
-    steamHome
-  }: {
-    steamHome: string
-  }): TE.TaskEither<unknown, string> {
+  ensureSteamConfigDirTaskEither({ steamHome }: { steamHome: string }): TE.TaskEither<unknown, string> {
     return TE.tryCatch(
       async () => await this.ensureSteamConfigDir(steamHome),
       reason => reason
@@ -124,10 +102,9 @@ export default class AuthenticateSteamCMD {
       return steamConfigDir
     } catch (error) {
       core.error(
-        `Couldn't ensure steam config directory. Reason: ${discernFileSystemErrorReason(
-          error,
-          { file: steamConfigDir }
-        )}`
+        `Couldn't ensure steam config directory. Reason: ${discernFileSystemErrorReason(error, {
+          file: steamConfigDir
+        })}`
       )
       throw error
     }
@@ -141,11 +118,7 @@ export default class AuthenticateSteamCMD {
     configValveDataFormat: Buffer
   }): TE.TaskEither<unknown, string> {
     return TE.tryCatch(
-      async () =>
-        await this.writeSteamConfigFile(
-          steamConfigDirectory,
-          configValveDataFormat
-        ),
+      async () => await this.writeSteamConfigFile(steamConfigDirectory, configValveDataFormat),
       reason => reason
     )
   }
@@ -186,10 +159,7 @@ export default class AuthenticateSteamCMD {
   }
 
   @ActionLogGroup('Writing config file')
-  async writeSteamConfigFile(
-    steamConfigDirectory: string,
-    configValveDataFormat: Buffer
-  ): Promise<string> {
+  async writeSteamConfigFile(steamConfigDirectory: string, configValveDataFormat: Buffer): Promise<string> {
     const steamConfigFile = path.join(steamConfigDirectory, 'config.vdf')
     try {
       return await this.writeFile(steamConfigFile, configValveDataFormat, {
@@ -198,20 +168,13 @@ export default class AuthenticateSteamCMD {
       })
     } catch (error) {
       core.error(
-        `Failed to write Steam config. Reason: ${discernFileSystemErrorReason(
-          error,
-          { file: steamConfigFile }
-        )}`
+        `Failed to write Steam config. Reason: ${discernFileSystemErrorReason(error, { file: steamConfigFile })}`
       )
       throw error
     }
   }
 
-  testLoginSucceedsTaskEither({
-    steamUsername
-  }: {
-    steamUsername: string
-  }): TE.TaskEither<unknown, void> {
+  testLoginSucceedsTaskEither({ steamUsername }: { steamUsername: string }): TE.TaskEither<unknown, void> {
     return TE.tryCatch(
       async () => await this.testLoginSucceeds(steamUsername),
       reason => reason
@@ -224,13 +187,7 @@ export default class AuthenticateSteamCMD {
     // U+0004: 'End of Transmission' - if prompted for a password, fail immediately
     const loginExitCode = await exec.exec(
       'steamcmd',
-      [
-        '+set_steam_guard_code',
-        'INVALID',
-        '+login',
-        `${steamUsername}`,
-        '+quit'
-      ],
+      ['+set_steam_guard_code', 'INVALID', '+login', `${steamUsername}`, '+quit'],
       {
         ignoreReturnCode: true,
         input: Buffer.from('\u0004')
