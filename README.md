@@ -4,7 +4,6 @@
 ![CI](https://github.com/Lordfirespeed/auth-steamcmd/actions/workflows/ci.yml/badge.svg)
 [![Check dist/](https://github.com/Lordfirespeed/auth-steamcmd/actions/workflows/check-dist.yml/badge.svg)](https://github.com/Lordfirespeed/auth-steamcmd/actions/workflows/check-dist.yml)
 [![CodeQL](https://github.com/Lordfirespeed/auth-steamcmd/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Lordfirespeed/auth-steamcmd/actions/workflows/codeql-analysis.yml)
-[![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 This action helps you to login to Steam with the **Steam Console Client** for
 use in actions.
