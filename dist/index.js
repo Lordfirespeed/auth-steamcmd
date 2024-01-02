@@ -11931,8 +11931,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
  */
 const core = __importStar(__nccwpck_require__(2186));
 const main_1 = __importDefault(__nccwpck_require__(399));
+const type_safe_error_1 = __importDefault(__nccwpck_require__(7403));
 async function wrap_install() {
-    await new main_1.default().run().catch(error => core.setFailed(error));
+    try {
+        await new main_1.default().run();
+    }
+    catch (error) {
+        (0, type_safe_error_1.default)(error, core.setFailed);
+    }
 }
 void wrap_install();
 
@@ -11945,7 +11951,7 @@ void wrap_install();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-function discernActionInputErrorReason(error, context) {
+function discernActionInputErrorReason(error, _context) {
     if (!(error instanceof Error)) {
         if (error instanceof String)
             return `Unknown: ${error}}`;
@@ -12131,6 +12137,26 @@ function isErrnoException(error) {
         (typeof error.syscall === 'string' || typeof error.syscall === 'undefined'));
 }
 exports["default"] = isErrnoException;
+
+
+/***/ }),
+
+/***/ 7403:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+function typeSafeError(error, handler) {
+    if (!(error instanceof Error)) {
+        if (error instanceof String) {
+            return handler(new Error(error));
+        }
+        return handler(new Error('Unknown: thrown value not an Error'));
+    }
+    return handler(error);
+}
+exports["default"] = typeSafeError;
 
 
 /***/ }),
