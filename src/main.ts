@@ -12,12 +12,18 @@ import {
   discernActionInputErrorReason
 } from './lib'
 
+type ActionInputs = {
+  configValveDataFormat: Buffer
+  steamHome: string
+  steamUsername: string
+}
+
 export default class AuthenticateSteamCMD {
   /**
    * The main function for the action.
    * @returns {Promise<void>} Resolves when the action is complete.
    */
-  async run() {
+  async run(): Promise<void> {
     await pipe(
       this.getInputsTaskEither(),
       TE.bindW('steamConfigDirectory', state =>
@@ -33,9 +39,9 @@ export default class AuthenticateSteamCMD {
     )()
   }
 
-  getInputsTaskEither() {
+  getInputsTaskEither(): TE.TaskEither<unknown, ActionInputs> {
     return TE.tryCatch(
-      () => this.getInputs(),
+      async () => await this.getInputs(),
       reason => reason
     )
   }
@@ -58,18 +64,18 @@ export default class AuthenticateSteamCMD {
   }
 
   async expandEnvVars(value: string): Promise<string> {
-    return await exec
-      .getExecOutput('bash', ['-c', `echo "${value}"`], {
+    return (
+      await exec.getExecOutput('bash', ['-c', `echo "${value}"`], {
         ignoreReturnCode: false
       })
-      .then(result => result.stdout)
-      .then(stdout => stdout.trim())
+    ).stdout.trim()
   }
 
   @ActionLogGroup('Getting inputs')
-  async getInputs() {
-    const configValveDataFormatBase64Encoded =
-      this.getRequiredInput('steam_config_vdf')
+  async getInputs(): Promise<ActionInputs> {
+    const configValveDataFormatBase64Encoded = this.getRequiredInput(
+      'steam_config_vdf'
+    ).replaceAll(/\s+/, '')
     if (!isBase64(configValveDataFormatBase64Encoded)) {
       core.error(
         "Provided 'steam_config_vdf' input is not Base64 encoded. Aborting."
@@ -97,15 +103,19 @@ export default class AuthenticateSteamCMD {
     return { configValveDataFormat, steamHome, steamUsername }
   }
 
-  ensureSteamConfigDirTaskEither({ steamHome }: { steamHome: string }) {
+  ensureSteamConfigDirTaskEither({
+    steamHome
+  }: {
+    steamHome: string
+  }): TE.TaskEither<unknown, string> {
     return TE.tryCatch(
-      () => this.ensureSteamConfigDir(steamHome),
+      async () => await this.ensureSteamConfigDir(steamHome),
       reason => reason
     )
   }
 
   @ActionLogGroup('Ensuring steam config directory')
-  async ensureSteamConfigDir(steamHome: string) {
+  async ensureSteamConfigDir(steamHome: string): Promise<string> {
     const steamConfigDir = path.join(steamHome, 'config')
     try {
       core.info(`Ensuring directory ${steamConfigDir}...`)
@@ -129,10 +139,13 @@ export default class AuthenticateSteamCMD {
   }: {
     steamConfigDirectory: string
     configValveDataFormat: Buffer
-  }) {
+  }): TE.TaskEither<unknown, string> {
     return TE.tryCatch(
-      () =>
-        this.writeSteamConfigFile(steamConfigDirectory, configValveDataFormat),
+      async () =>
+        await this.writeSteamConfigFile(
+          steamConfigDirectory,
+          configValveDataFormat
+        ),
       reason => reason
     )
   }
@@ -141,7 +154,7 @@ export default class AuthenticateSteamCMD {
     file: string,
     content: string | Uint8Array,
     options: Parameters<fs.FileHandle['writeFile']>[1] = null
-  ) {
+  ): Promise<string> {
     if (typeof options === 'string') {
       options = {
         encoding: options
@@ -176,7 +189,7 @@ export default class AuthenticateSteamCMD {
   async writeSteamConfigFile(
     steamConfigDirectory: string,
     configValveDataFormat: Buffer
-  ) {
+  ): Promise<string> {
     const steamConfigFile = path.join(steamConfigDirectory, 'config.vdf')
     try {
       return await this.writeFile(steamConfigFile, configValveDataFormat, {
@@ -194,15 +207,19 @@ export default class AuthenticateSteamCMD {
     }
   }
 
-  testLoginSucceedsTaskEither({ steamUsername }: { steamUsername: string }) {
+  testLoginSucceedsTaskEither({
+    steamUsername
+  }: {
+    steamUsername: string
+  }): TE.TaskEither<unknown, void> {
     return TE.tryCatch(
-      () => this.testLoginSucceeds(steamUsername),
+      async () => await this.testLoginSucceeds(steamUsername),
       reason => reason
     )
   }
 
   @ActionLogGroup('Testing login succeeds')
-  async testLoginSucceeds(steamUsername: string) {
+  async testLoginSucceeds(steamUsername: string): Promise<void> {
     core.info('Attempting SteamCMD login...')
     // U+0004: 'End of Transmission' - if prompted for a password, fail immediately
     const loginExitCode = await exec.exec(
