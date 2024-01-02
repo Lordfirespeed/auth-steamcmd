@@ -12245,7 +12245,7 @@ class AuthenticateSteamCMD {
         })).stdout.trim();
     }
     async getInputs() {
-        const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf').replaceAll(/\s+/, '');
+        const configValveDataFormatBase64Encoded = this.getRequiredInput('steam_config_vdf').replaceAll(/\s+/g, '');
         if (!(0, is_base64_1.default)(configValveDataFormatBase64Encoded)) {
             core.error("Provided 'steam_config_vdf' input is not Base64 encoded. Aborting.");
             throw new Error("Encoding of 'steam_config_vdf' is not Base64.");
