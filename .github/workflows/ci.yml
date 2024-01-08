@@ -53,7 +53,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup SteamCMD
-        uses: Lordfirespeed/setup-steamcmd@v2.0.1
+        uses: Lordfirespeed/setup-steamcmd@v2.0.2
 
       - name: Authenticate SteamCMD
         id: test-action
